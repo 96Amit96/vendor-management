@@ -1,10 +1,19 @@
 package com.example.demo.vendor;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+
 
 @Service
 public class VendorService {
@@ -95,6 +104,56 @@ public void deleteVendors(List<Long> vendorIds) {
             throw new RuntimeException("Vendor not found with id: " + id);
         }
     }
+
+public void writeVendorsToCsv(HttpServletResponse response) throws IOException {
+    List<Vendor> vendors = vendorRepo.findAll();
+    try( PrintWriter writer = response.getWriter() ){
+        writer.println("Id,Vendor Number,First Name,Last Name,Company, Site Address,Vendor Type,Category,Vendor Code,Address1,Address2,City,State,Country,Postal Code,Contact Via,Phone1,Phone2,Fax,Email");
+        
+        for(Vendor vendor : vendors) {
+            writer.println(
+                vendor.getId() + "," +
+                vendor.getVendorNumber() + "," +
+                vendor.getFirstName() + "," +
+                vendor.getLastName() + "," +
+                vendor.getCompany() + "," +
+                vendor.getSiteAddress() + "," +
+                vendor.getSiteAddress() + "," +
+                vendor.getVendorType() + "," +
+                vendor.getCategory() + "," +
+                vendor.getVendorCode() + "," +
+                vendor.getAddress1() + "," +
+                vendor.getAddress2() + "," +
+                vendor.getCity() + "," +
+                vendor.getState() + "," +
+                vendor.getCountry() + "," +
+                vendor.getPostalCode() + "," +
+                vendor.getContactVia() + "," +
+                vendor.getPhone1() + "," +
+                vendor.getPhone2() + "," +
+                vendor.getFax() + "," +
+                vendor.getEmail() + "," 
+            );
+        }
+    }
+}
+
+
+    public void exportVendorsToXML(HttpServletResponse response) throws IOException, JAXBException {
+        response.setContentType("application/xml");
+        response.setHeader("Content-Disposition", "attachment; filename=vendors.xml");
+
+        List<Vendor> vendors = vendorRepo.findAll();
+        VendorWrapper vendorWrapper = new VendorWrapper(vendors);
+
+        JAXBContext jaxbContext = JAXBContext.newInstance(VendorWrapper.class);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+        OutputStream outputStream = response.getOutputStream();
+        marshaller.marshal(vendorWrapper, outputStream);
+    }
+
 
 
 }

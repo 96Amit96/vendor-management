@@ -68,6 +68,20 @@
     <scope>provided</scope>
 </dependency>
 
+<!-- OpenCSV for CSV Handling -->
+<dependency>
+    <groupId>com.opencsv</groupId>
+    <artifactId>opencsv</artifactId>
+    <version>5.7.1</version>
+</dependency>
+
+<!-- JAXB for XML Processing -->
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>4.0.3</version>
+</dependency>
+
 
 
 
