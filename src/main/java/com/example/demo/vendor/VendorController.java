@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
+import java.util.Objects;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/vendors")
@@ -82,6 +84,39 @@ public class VendorController {
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"vendors.csv\"");
         vendorService.writeVendorsToCsv(response);
     }
+
+    @GetMapping("/download-excel")
+    public void downloadExcel(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=vendors.xlsx");
+
+        vendorService.writeVendorsToExcel(response);
+    }
     
-    
+    @PostMapping("/upload")
+public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    try {
+        // Get file type and validate
+        String fileType = Objects.requireNonNull(file.getContentType(), "File type cannot be null");
+        System.out.println("Detected file type: " + fileType);
+
+        // Process based on file type
+        if (fileType.contains("csv")) {
+            vendorService.processCSV(file);
+        } else if (fileType.contains("xml")) {
+            vendorService.processXML(file);
+        } else if (fileType.contains("spreadsheetml")) {
+            vendorService.processExcel(file);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unsupported file type: " + fileType);
+        }
+
+        return ResponseEntity.ok("File uploaded and processed successfully!");
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("File processing failed: " + e.getMessage());
+    }
+}
+
+
 }
