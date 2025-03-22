@@ -14,6 +14,8 @@ import jakarta.xml.bind.Marshaller;
 import java.io.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import com.example.demo.ActivityLog.ActivityLogService;
 import com.opencsv.CSVReader;
 import java.util.ArrayList;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +26,8 @@ public class VendorService {
 
     @Autowired
     private VendorRepository vendorRepo;
+    @Autowired
+    private ActivityLogService activityLogService;
 
     public Vendor createVendor(VendorDto vendorDto) {
         Vendor vendor = new Vendor();
@@ -46,8 +50,9 @@ public class VendorService {
         vendor.setPhone2(vendorDto.getPhone2());
         vendor.setFax(vendorDto.getFax());
         vendor.setEmail(vendorDto.getEmail());
-
-        return vendorRepo.save(vendor);
+        Vendor v = vendorRepo.save(vendor);
+        activityLogService.logActivity("Vendor Created", "Admin", "Created Vendor: " + v.getFirstName());
+        return v;
 
     }
 
@@ -62,10 +67,10 @@ public List<Vendor> searchVendors(String query) {
 }
 
 public boolean deleteVendor(Long id) {
-    if (vendorRepo.existsById(id)) { // Check if vendor exists before deleting
+    if (vendorRepo.existsById(id)) { 
         vendorRepo.deleteById(id);
-        System.out.println("DELETED");
-        return true; // Successfully deleted
+        activityLogService.logActivity("Vendor Deleted", "Admin", "Deleted Vendor Id: " + id);
+        return true; 
     }
     return false; // Vendor not found
 }
@@ -102,8 +107,10 @@ public void deleteVendors(List<Long> vendorIds) {
             existingVendor.setEmail(updatedVendor.getEmail());
             existingVendor.setFax(updatedVendor.getFax());
 
+            Vendor v=vendorRepo.save(existingVendor);
+            activityLogService.logActivity("Vendor Updated", "Admin", "Updated Vendor Name: " + v.getFirstName());
             // 🔹 Save updated vendor
-            return vendorRepo.save(existingVendor);
+            return v;
         } else {
             throw new RuntimeException("Vendor not found with id: " + id);
         }

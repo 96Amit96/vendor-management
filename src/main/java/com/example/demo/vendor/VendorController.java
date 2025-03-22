@@ -56,7 +56,6 @@ public class VendorController {
       @PutMapping("/{id}")
     public ResponseEntity<Vendor> updateVendor(@PathVariable Long id, @RequestBody Vendor updatedVendor) {
         Vendor updated = vendorService.updateVendor(id, updatedVendor);
-        System.out.println("VENDOR UPDATED");
         return ResponseEntity.ok(updated);
     }
 
